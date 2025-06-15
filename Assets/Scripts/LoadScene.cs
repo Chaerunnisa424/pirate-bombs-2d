@@ -1,15 +1,13 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class FinishTrigger : MonoBehaviour
+public class LoadScene : MonoBehaviour
 {
-    public GameObject finishPanel; // Assign dari Inspector
 
-    private void OnTriggerEnter2D(Collider2D other)
+    public void pindahscene(string name)
     {
-        if (other.CompareTag("Player"))
-        {
-            finishPanel.SetActive(true);
-            Time.timeScale = 0f; // Pause game (opsional)
-        }
+        SceneManager.LoadScene(name);
     }
 }
