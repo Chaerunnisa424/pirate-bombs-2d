@@ -38,13 +38,22 @@ public class Bomb : MonoBehaviour
             if (nearbyObject.CompareTag("Player"))
             {
                 Rigidbody2D rb = nearbyObject.GetComponent<Rigidbody2D>();
+                Vector2 direction = Vector2.zero;
+
                 if (rb != null)
                 {
-                    Vector2 direction = (rb.transform.position - transform.position).normalized;
+                    direction = (rb.transform.position - transform.position).normalized;
                     rb.AddForce(direction * explosionForce);
-                    // Di sini kamu bisa menambahkan efek mati / damage
-                    Debug.Log("Player terkena ledakan!");
                 }
+
+                // Jika player punya script kesehatan
+                PlayerMovement player = nearbyObject.GetComponent<PlayerMovement>();
+                if (player != null)
+                {
+                    player.TakeDamage(20, direction); // Damage 20
+                }
+
+                Debug.Log("Player terkena ledakan!");
             }
         }
 

@@ -34,8 +34,10 @@ public class BombThrower : MonoBehaviour
             return;
         }
 
-        // Instantiate bom
-        GameObject bomb = Instantiate(bombPrefab, throwPoint.position, Quaternion.identity);
+        //// Instantiate bom
+        //GameObject bomb = Instantiate(bombPrefab, throwPoint.position, Quaternion.identity);
+        GameObject bomb = Instantiate(bombPrefab, throwPoint.position + Vector3.up * 0.2f, Quaternion.identity);
+
 
         // Pasang callback saat bom meledak
         Bomb bombScript = bomb.GetComponent<Bomb>();
@@ -48,7 +50,7 @@ public class BombThrower : MonoBehaviour
         Rigidbody2D rb = bomb.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
-            float throwForceX = playerFacingRight ? 8f : -8f;
+            float throwForceX = playerFacingRight ? 6f : -6f;
             rb.AddForce(new Vector2(throwForceX, 3.5f), ForceMode2D.Impulse);
         }
 

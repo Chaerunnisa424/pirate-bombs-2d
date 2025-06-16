@@ -104,12 +104,12 @@ public class PlayerMovement : MonoBehaviour
         if (horizontal > 0f)
         {
             state = MovementState.walk;
-            sprite.flipX = false;
+            transform.localScale = new Vector3(1, 1, 1); // menghadap kanan
         }
         else if (horizontal < 0f)
         {
             state = MovementState.walk;
-            sprite.flipX = true;
+            transform.localScale = new Vector3(-1, 1, 1); // menghadap kiri
         }
         else
         {
@@ -127,6 +127,7 @@ public class PlayerMovement : MonoBehaviour
 
         anim.SetInteger("state", (int)state);
     }
+
 
     private bool isGrounded()
     {

@@ -561,7 +561,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &514475169
 GameObject:
@@ -5086,6 +5086,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Cucumber
       objectReference: {fileID: 0}
+    - target: {fileID: 3803943661402124715, guid: 27bf92e096b5daf4c9d5c7f095a9403c, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 27bf92e096b5daf4c9d5c7f095a9403c, type: 3}
 --- !u!1001 &7720867157294443110
@@ -5101,7 +5105,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7720867156507598076, guid: 5bad3fe70132f5643ad979a0ada21a1e, type: 3}
       propertyPath: m_RootOrder
-      value: 9
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7720867156507598076, guid: 5bad3fe70132f5643ad979a0ada21a1e, type: 3}
       propertyPath: m_LocalPosition.x
