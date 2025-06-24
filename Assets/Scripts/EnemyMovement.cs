@@ -1,19 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyMovement : MonoBehaviour
 {
-    [Header("Movement Settings")]
     public float moveSpeed = 3f;
     public Transform rightPoint;
     public Transform leftPoint;
+    public float pauseDuration = 0.5f;
 
     private Vector3 targetPosition;
     private Animator anim;
     private SpriteRenderer sprite;
 
     private bool movingRight = true;
+    private bool isPaused = false;
 
     private void Awake()
     {
@@ -25,37 +24,46 @@ public class EnemyMovement : MonoBehaviour
     {
         if (leftPoint == null || rightPoint == null)
         {
-            Debug.LogError("LeftPoint dan RightPoint belum di-assign di Inspector.");
+            Debug.LogError("LeftPoint dan RightPoint belum di-assign.");
             enabled = false;
             return;
         }
 
-        // Mulai bergerak ke kanan dulu
         targetPosition = rightPoint.position;
         movingRight = true;
-        anim.SetBool("isWalking", true);
     }
 
     private void Update()
     {
-        Patrol();
+        if (!isPaused)
+        {
+            Patrol();
+        }
     }
 
     private void Patrol()
     {
-        // Gerak menuju target
+        float distance = Vector2.Distance(transform.position, targetPosition);
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
 
-        // Jika sudah sampai target, ganti arah
-        if (Vector2.Distance(transform.position, targetPosition) < 0.1f)
+        if (distance < 0.1f)
         {
-            movingRight = !movingRight;  // toggle arah
-            targetPosition = movingRight ? rightPoint.position : leftPoint.position;
+            anim.SetBool("isWalking", false);
+            isPaused = true;
+            Invoke(nameof(SwitchDirection), pauseDuration);
+        }
+        else
+        {
+            anim.SetBool("isWalking", true);
         }
 
-        // Flip sprite sesuai arah
         sprite.flipX = !movingRight;
+    }
 
-        anim.SetBool("isWalking", true);
+    private void SwitchDirection()
+    {
+        movingRight = !movingRight;
+        targetPosition = movingRight ? rightPoint.position : leftPoint.position;
+        isPaused = false;
     }
 }

@@ -1,11 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
     public int damage = 20;
     public float knockbackForce = 5f;
+
+    public int health = 100;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -16,9 +16,24 @@ public class Enemy : MonoBehaviour
         {
             Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
 
-            player.TakeDamage(damage, knockbackDir); // Kurangi HP
-            knockBack.GetKnockedBack(transform, knockbackForce); // Terapkan knockback
+            player.TakeDamage(damage, knockbackDir);
+            knockBack.GetKnockedBack(transform, knockbackForce);
         }
     }
-}
 
+    public void TakeDamage(int damageAmount)
+    {
+        health -= damageAmount;
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        // Tambahkan animasi/efek kematian jika perlu
+        Destroy(gameObject);
+    }
+}

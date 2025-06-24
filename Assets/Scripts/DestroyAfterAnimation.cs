@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class DestroyAfterAnimation : MonoBehaviour
 {
@@ -9,10 +10,23 @@ public class DestroyAfterAnimation : MonoBehaviour
 
     void Start()
     {
-        // Langsung ledakkan saat animasi dimulai
-        Explode();
-        // Hancurkan efek ledakan setelah delay
-        Destroy(gameObject, delay);
+        // Mulai proses ledakan selama delay detik
+        StartCoroutine(ExplodeDuringLifetime());
+    }
+
+    IEnumerator ExplodeDuringLifetime()
+    {
+        float timer = 0f;
+
+        while (timer < delay)
+        {
+            Explode();
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        // Hancurkan efek ledakan
+        Destroy(gameObject);
     }
 
     void Explode()
@@ -29,12 +43,22 @@ public class DestroyAfterAnimation : MonoBehaviour
                     kb.GetKnockedBack(transform, knockBackForce);
                 }
 
-                Destroy(hit.gameObject); // Hancurkan enemy
+                // Jika musuh memiliki health system
+                Enemy enemy = hit.GetComponent<Enemy>();
+                if (enemy != null)
+                {
+                    enemy.TakeDamage(damage);
+                }
+                else
+                {
+                    // Jika tidak, langsung dihancurkan
+                    Destroy(hit.gameObject);
+                }
             }
         }
     }
 
-    // Untuk bantu lihat radius di editor Unity
+    // Menampilkan radius ledakan di editor
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
