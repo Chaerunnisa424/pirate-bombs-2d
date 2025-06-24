@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;  // hanya jika kamu ingin load scene
 
 public class FinishDoor : MonoBehaviour
 {
@@ -11,19 +10,30 @@ public class FinishDoor : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    // Dipanggil oleh GoldCollector saat semua koin terkumpul
+    public void OpenFinishDoor()
     {
-        if (other.CompareTag("Player") && !isOpened)
+        if (!isOpened)
         {
             isOpened = true;
-            animator.SetBool("Open", true);  // trigger animasi buka
-            Invoke("LoadNextScene", 1f);     // delay sesuai durasi animasi
+            animator.SetBool("Open", true); // Mainkan animasi pintu
         }
     }
 
-    void LoadNextScene()
+    // Ini dipanggil saat player menyentuh pintu SETELAH terbuka
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Level selesai!");
-        // SceneManager.LoadScene("NextLevel"); // aktifkan jika mau pindah scene
+        if (other.CompareTag("Player") && isOpened)
+        {
+            Debug.Log("Player sudah mencapai pintu setelah pintu terbuka.");
+            // Jangan pindah scene! Biarkan script lain (misal LevelFinishTrigger) yang handle tampilan panel.
+            // Bisa kasih event / trigger di sini kalau mau.
+        }
+    }
+
+    // Getter agar bisa dicek status terbukanya dari luar
+    public bool IsOpened()
+    {
+        return isOpened;
     }
 }

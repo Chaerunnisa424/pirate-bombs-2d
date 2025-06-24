@@ -6,6 +6,7 @@ TagManager:
   tags:
   - LoadScene
   - Enemy
+  - Gold
   layers:
   - Default
   - TransparentFX
