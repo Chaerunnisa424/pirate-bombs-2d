@@ -16,7 +16,7 @@ public class Bomb : MonoBehaviour
 
     void Start()
     {
-        // Panggil fungsi ledakan setelah delay
+        // Ledakkan bom setelah waktu tertentu
         Invoke(nameof(Explode), timer);
     }
 
@@ -25,47 +25,58 @@ public class Bomb : MonoBehaviour
         if (exploded) return;
         exploded = true;
 
-        // Spawn animasi ledakan jika ada
+        // Buat prefab ledakan
         if (explosionPrefab != null)
         {
             Instantiate(explosionPrefab, transform.position, Quaternion.identity);
         }
 
-        // Cek objek dalam radius ledakan
+        // Deteksi objek dalam radius ledakan
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, explosionRadius);
-        foreach (Collider2D nearbyObject in colliders)
+        foreach (Collider2D obj in colliders)
         {
-            if (nearbyObject.CompareTag("Player"))
+            // Ledakan ke Player
+            if (obj.CompareTag("Player"))
             {
-                Rigidbody2D rb = nearbyObject.GetComponent<Rigidbody2D>();
-                Vector2 direction = Vector2.zero;
+                Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
+                Vector2 dir = (obj.transform.position - transform.position).normalized;
 
                 if (rb != null)
                 {
-                    direction = (rb.transform.position - transform.position).normalized;
-                    rb.AddForce(direction * explosionForce);
+                    rb.AddForce(dir * explosionForce);
                 }
 
-                // Jika player punya script kesehatan
-                PlayerMovement player = nearbyObject.GetComponent<PlayerMovement>();
+                PlayerMovement player = obj.GetComponent<PlayerMovement>();
                 if (player != null)
                 {
-                    player.TakeDamage(20, direction); // Damage 20
+                    player.TakeDamage(20, dir);
                 }
 
                 Debug.Log("Player terkena ledakan!");
             }
+
+            // Ledakan ke Enemy
+            if (obj.CompareTag("Enemy"))
+            {
+                EnemyChase enemy = obj.GetComponent<EnemyChase>();
+                if (enemy != null)
+                {
+                    enemy.TriggerBurning(); // Mainkan animasi meniup sumbu
+                }
+
+                Debug.Log("Enemy terkena ledakan!");
+            }
         }
 
-        // Panggil event (misalnya untuk BombThrower agar bisa lempar lagi)
+        // Beritahu BombThrower bahwa bom sudah meledak
         onExplosion?.Invoke();
 
-        // Hancurkan bom ini setelah ledakan
+        // Hancurkan objek bom
         Destroy(gameObject);
     }
 
-    // Untuk menampilkan radius ledakan saat object dipilih di Editor
-    void OnDrawGizmosSelected()
+    // Visualisasi radius di Scene View
+    private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, explosionRadius);

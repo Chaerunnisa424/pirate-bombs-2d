@@ -1,14 +1,11 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Player Movement")]
+    [Header("Movement Settings")]
     public float moveSpeed = 5f;
-    public float runSpeed = 8f;
     public float jumpForce = 10f;
 
     private Rigidbody2D rb;
@@ -18,23 +15,21 @@ public class PlayerMovement : MonoBehaviour
 
     private float mobileInputX = 0f;
     private Vector2 moveInput;
-    private bool isJumping = false;
 
-    private enum MovementState { idle, walk, jump, fall, run }
+    private enum MovementState { idle, walk, jump, fall }
 
-    [Header("Jump Settings")]
+    [Header("Ground Check")]
     [SerializeField] private LayerMask jumpableGround;
     private BoxCollider2D coll;
 
     [Header("Health System")]
-    public int maxHealth = 100;
-    private int currentHealth;
-    public TextMeshProUGUI healthText;
+    public GameObject[] hearts; // drag 3 image heart
+    private int maxLives = 3;
+    private int currentLives;
 
     [Header("Knockback Settings")]
     [SerializeField] private float knockBackTime = 0.2f;
     [SerializeField] private float knockBackThrust = 10f;
-
     private bool isKnockedBack = false;
 
     [Header("UI")]
@@ -46,11 +41,10 @@ public class PlayerMovement : MonoBehaviour
         anim = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
         coll = GetComponent<BoxCollider2D>();
-
         playerController = new PlayerController();
 
-        currentHealth = maxHealth;
-        UpdateHealthUI();
+        currentLives = maxLives;
+        UpdateHeartUI();
 
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
@@ -71,13 +65,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        // Hanya update input jika di mobile, untuk UI buttons
         if (Application.isMobilePlatform)
         {
             moveInput = new Vector2(mobileInputX, 0f);
-        }
-        else
-        {
-            moveInput = playerController.Movement.Move.ReadValue<Vector2>();
         }
     }
 
@@ -85,31 +76,26 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isKnockedBack) return;
 
-        Vector2 targetVelocity = new Vector2((moveInput.x + mobileInputX) * moveSpeed, rb.velocity.y);
-        rb.velocity = targetVelocity;
+        // Gabungkan input dari keyboard + tombol mobile
+        float horizontal = moveInput.x + mobileInputX;
+        rb.velocity = new Vector2(horizontal * moveSpeed, rb.velocity.y);
 
-        UpdateAnimation();
-
-        if (isGrounded() && Mathf.Abs(rb.velocity.y) < 0.01f)
-        {
-            isJumping = false;
-        }
+        UpdateAnimation(horizontal);
     }
 
-    private void UpdateAnimation()
+    private void UpdateAnimation(float horizontal)
     {
         MovementState state;
-        float horizontal = moveInput.x != 0 ? moveInput.x : mobileInputX;
 
         if (horizontal > 0f)
         {
             state = MovementState.walk;
-            transform.localScale = new Vector3(1, 1, 1); // menghadap kanan
+            transform.localScale = new Vector3(1, 1, 1);
         }
         else if (horizontal < 0f)
         {
             state = MovementState.walk;
-            transform.localScale = new Vector3(-1, 1, 1); // menghadap kiri
+            transform.localScale = new Vector3(-1, 1, 1);
         }
         else
         {
@@ -117,21 +103,16 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (rb.velocity.y > 0.1f)
-        {
             state = MovementState.jump;
-        }
         else if (rb.velocity.y < -0.1f)
-        {
             state = MovementState.fall;
-        }
 
         anim.SetInteger("state", (int)state);
     }
 
-
     private bool isGrounded()
     {
-        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, 0.1f, jumpableGround);
     }
 
     private void Jump()
@@ -139,24 +120,18 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded())
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            isJumping = true;
         }
     }
 
+    // Tombol Mobile: Panggil dari UI Button
     public void MoveRight(bool isPressed)
     {
-        if (isPressed)
-            mobileInputX = 1f;
-        else if (mobileInputX == 1f)
-            mobileInputX = 0f;
+        mobileInputX = isPressed ? 1f : 0f;
     }
 
     public void MoveLeft(bool isPressed)
     {
-        if (isPressed)
-            mobileInputX = -1f;
-        else if (mobileInputX == -1f)
-            mobileInputX = 0f;
+        mobileInputX = isPressed ? -1f : 0f;
     }
 
     public void MobileJump()
@@ -171,12 +146,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isKnockedBack) return;
 
-        currentHealth -= damage;
-        UpdateHealthUI();
+        currentLives -= 1;
+        UpdateHeartUI();
 
-        if (currentHealth <= 0)
+        if (currentLives <= 0)
         {
-            currentHealth = 0;
+            currentLives = 0;
             Die();
         }
         else
@@ -188,19 +163,20 @@ public class PlayerMovement : MonoBehaviour
     private void Die()
     {
         Debug.Log("Player Mati");
-        this.enabled = false;
         rb.velocity = Vector2.zero;
-
-        anim.SetTrigger("die"); // Jika ada animasi mati
+        this.enabled = false;
+        anim.SetTrigger("die");
 
         if (gameOverPanel != null)
             gameOverPanel.SetActive(true);
     }
 
-    private void UpdateHealthUI()
+    private void UpdateHeartUI()
     {
-        if (healthText != null)
-            healthText.text = "Health: " + currentHealth;
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            hearts[i].SetActive(i < currentLives);
+        }
     }
 
     private IEnumerator HandleKnockback(Vector2 direction)
